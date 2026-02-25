@@ -39,5 +39,68 @@
  *   //      text: "I love this song", wordCount: 4, sentiment: "love" }
  */
 export function parseWhatsAppMessage(message) {
-  // Your code here
+  if (
+    typeof message !== "string" ||
+    !message.includes(" - ") ||
+    !message.includes(": ")
+  )
+    return null;
+
+  // Date
+  const commaIndexDate = message.indexOf(", ");
+  if (commaIndexDate === -1) {
+    return "INVALID FORMAT";
+  }
+  const date = message.slice(0, commaIndexDate);
+
+  // Time
+  const commaIndex = message.indexOf(", ");
+  const dashIndex = message.indexOf(" - ");
+  if (commaIndex === -1 || dashIndex === -1) {
+    return "INVALID FORMAT";
+  }
+  const time = message.slice(commaIndex + 2, dashIndex);
+
+  // Sender
+  const dashIndexSender = message.indexOf(" - ");
+  const colonIndexSender = message.indexOf(": ");
+  if (dashIndexSender === -1 || colonIndexSender === -1) {
+    return "INVALID FORMAT";
+  }
+  const Sender = message.slice(dashIndexSender + 3, colonIndexSender);
+
+  // Text
+  const colonIndexText = message.indexOf(": ");
+  if (colonIndexText === -1) {
+    return "INVALID FORMAT";
+  }
+  const Text = message.slice(colonIndexText + 2);
+
+  // WordCount
+  const WordCount = Text.split(" ").filter((word) => word.trim() !== "").length;
+
+  // Sentiment
+  let sentiment;
+  const text = message.toLowerCase();
+
+  if (text.includes("😂") || text.includes(":)") || text.includes("haha")) {
+    sentiment = "funny";
+  } else if (
+    text.includes("❤") ||
+    text.includes("love") ||
+    text.includes("pyaar")
+  ) {
+    sentiment = "love";
+  } else {
+    sentiment = "neutral";
+  }
+
+  return {
+    date: date,
+    time: time,
+    sender: Sender,
+    text: Text,
+    wordCount: WordCount,
+    sentiment: sentiment,
+  };
 }

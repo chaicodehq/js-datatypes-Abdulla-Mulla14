@@ -47,5 +47,94 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  const validTransactions = transactions.filter(
+    (txn) =>
+      typeof txn.amount === "number" &&
+      txn.amount > 0 &&
+      (txn.type === "credit" || txn.type === "debit"),
+  );
+  if (validTransactions.length === 0) return null;
+
+  const totalCredit = validTransactions.reduce((acc, txn) => {
+    if (txn.type === "credit") {
+      return acc + txn.amount;
+    }
+    return acc;
+  }, 0);
+
+  const totalDebit = validTransactions.reduce((acc, txn) => {
+    if (txn.type === "debit") {
+      return acc + txn.amount;
+    }
+    return acc;
+  }, 0);
+
+  const netBalance = totalCredit - totalDebit;
+
+  const transactionCount = validTransactions.length;
+
+  const validAmount = validTransactions.reduce((acc, txn) => {
+    return acc + txn.amount;
+  }, 0);
+  const avgTransaction = Math.round(validAmount / transactionCount);
+
+  const highestTransaction = validTransactions.reduce((max, txn) =>
+    txn.amount > max.amount ? txn : max,
+  );
+
+  const categoryBreakdown = validTransactions.reduce((acc, txn) => {
+    const category = txn.category;
+
+    if (!category) return acc;
+
+    if (!acc[category]) {
+      acc[category] = 0;
+    }
+
+    acc[category] += txn.amount;
+
+    return acc;
+  }, {});
+
+  let frequentContact = null;
+  if (validTransactions.length > 0) {
+    const count = {};
+    let maxCount = 0;
+
+    for (let i = 0; i < validTransactions.length; i++) {
+      const person = validTransactions[i].to;
+
+      if (!person) continue;
+
+      if (count[person]) {
+        count[person]++;
+      } else {
+        count[person] = 1;
+      }
+
+      if (count[person] > maxCount) {
+        maxCount = count[person];
+        frequentContact = person;
+      }
+    }
+  }
+
+  let allAbove100 = validTransactions.every((txn) => txn.amount > 100);
+
+  let hasLargeTransaction = validTransactions.some((txn) => txn.amount >= 5000);
+
+  return {
+    totalCredit: totalCredit,
+    totalDebit: totalDebit,
+    netBalance: netBalance,
+    transactionCount: transactionCount,
+    avgTransaction: avgTransaction,
+    highestTransaction: highestTransaction,
+    categoryBreakdown: categoryBreakdown,
+    frequentContact: frequentContact,
+    allAbove100: allAbove100,
+    hasLargeTransaction: hasLargeTransaction,
+  };
 }
